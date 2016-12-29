@@ -37,6 +37,16 @@ addStep xs a = if (nextStep (head xs) a) `elem` xs
       else (nextStep (head xs) a) : xs
 
 
-randomWalk :: Int -> [[Int]]
-randomWalk n = foldl addStep [[0,0]] (take n $ randomRs(0,5) (mkStdGen 12))
+randomWalk :: Int -> Int -> [[Int]]
+randomWalk n m = foldl addStep [[0,0]] (take n $ randomRs(0,5) (mkStdGen m))
 --randomWalk n = foldl addStep [[0,0]] [1..10]
+
+vectorLength :: Floating a => [Int] -> a
+vectorLength xs = sqrt $ sum $ map (^2) $ map fromIntegral xs
+
+average :: (Real a, Fractional b) => [a] -> b
+average xs = realToFrac (sum xs) / genericLength xs
+
+main = do
+  let avLength = average $ map (vectorLength) $ map  (head . randomWalk 100) [1..10]
+  putStrLn $ show avLength
