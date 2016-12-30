@@ -18,7 +18,7 @@ stringFunction :: (Eq a) => [a] -> [[a]]
 --stringFunction :: [Char] -> [[Char]]
 stringFunction st = [filter(==c) st | c <- st]
 
-numberOfEachElement :: [Char] -> [Int]
+numberOfEachElement :: (Eq a) => [a] -> [Int]
 numberOfEachElement st = map length (stringFunction st)
 
 maximum' :: (Ord a) => [a] -> a
@@ -106,7 +106,7 @@ interaction2 :: (Num a, Ord a) => [a] -> a
 interaction2 (x:[]) = 0
 interaction2 (x:y:[]) = pairwiseInteraction x y
 --interaction2 (y:xs) = interaction(xs) + sum (map (\x -> pairwiseInteraction x y) xs)
-interaction2 (y:xs) = interaction(xs) + sum (map (pairwiseInteraction y) xs)
+interaction2 (y:xs) = interaction2(xs) + sum (map (pairwiseInteraction y) xs)
 
 pairwiseInteraction :: (Num a, Ord a) => a -> a -> a
 pairwiseInteraction x y

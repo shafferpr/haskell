@@ -27,18 +27,33 @@ nextStep [x,y] a
   | a == 3 = [x-1,y]
   | a == 4 = [x, y-1]
   | a == 5 = [x-1,y-1]
-
+nextStep[x,y,z] a
+  | a == 0 = [x+1,y,z]
+  | a == 1 = [x,y+1,z]
+  | a == 2 = [x,y,z+1]
+  | a == 3 = [x-1,y,z]
+  | a == 4 = [x,y-1,z]
+  | a == 5 = [x,y,z-1]
+  | a == 6 = [x+1,y+1,z]
+  | a == 7 = [x,y+1,z+1]
+  | a == 8 = [x+1,y,z+1]
+  | a == 9 = [x-1,y-1,z]
+  | a == 10 = [x,y-1,z-1]
+  | a == 11 = [x-1,y,z-1]
+  | a == 12 = [x+1,y+1,z+1]
+  | a == 13 = [x-1,y-1,z-1]
 --nextStep [x,y] = if()
 
-addStep :: [[Int]] -> Int -> [[Int]]
-addStep [[]] a = [[0,0]]
-addStep xs a = if (nextStep (head xs) a) `elem` xs
+addStep :: Int -> [[Int]] -> Int -> [[Int]]
+addStep 2 [[]] a = [[0,0]]
+addStep 3 [[]] a = [[0,0,0]]
+addStep b xs a = if (nextStep (head xs) a) `elem` xs
       then xs
       else (nextStep (head xs) a) : xs
 
 
-randomWalk :: Int -> Int -> [[Int]]
-randomWalk n m = foldl addStep [[0,0]] (take n $ randomRs(0,5) (mkStdGen m))
+randomWalk :: Int -> Int -> Int -> Int -> [[Int]]
+randomWalk n d r m = foldl (addStep d) [[]] (take n $ randomRs(0,r) (mkStdGen m))
 --randomWalk n = foldl addStep [[0,0]] [1..10]
 
 vectorLength :: Floating a => [Int] -> a
@@ -48,5 +63,9 @@ average :: (Real a, Fractional b) => [a] -> b
 average xs = realToFrac (sum xs) / genericLength xs
 
 main = do
-  let avLength = average $ map (vectorLength) $ map  (head . randomWalk 100) [1..10]
+  putStrLn "what is the dimension?"
+  d <- getLine
+  putStrLn "how many moves are possible for each step?"
+  r <- getLine
+  let avLength = average $ map (vectorLength) $ map (head . randomWalk 100 (read d :: Int)  (read r :: Int)) [1..500]
   putStrLn $ show avLength
