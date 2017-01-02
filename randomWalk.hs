@@ -44,16 +44,19 @@ nextStep[x,y,z] a
   | a == 13 = [x-1,y-1,z-1]
 --nextStep [x,y] = if()
 
-addStep :: Int -> [[Int]] -> Int -> [[Int]]
-addStep 2 [[]] a = [[0,0]]
-addStep 3 [[]] a = [[0,0,0]]
-addStep b xs a = if (nextStep (head xs) a) `elem` xs
+addStep :: Bool -> [[Int]] -> Int -> [[Int]]
+--addStep 2 [[]] a = [[0,0]]
+--addStep 3 [[]] a = [[0,0,0]]
+addStep True xs a = if (nextStep (head xs) a) `elem` xs
       then xs
       else (nextStep (head xs) a) : xs
+addStep False xs a = (nextStep (head xs) a) : xs
 
-
-randomWalk :: Int -> Int -> Int -> Int -> [[Int]]
-randomWalk n d r m = foldl (addStep d) [[]] (take n $ randomRs(0,r) (mkStdGen m))
+randomWalk :: String -> Int -> Int -> Int -> Int -> [[Int]]
+randomWalk "Yes" n 2 r m = foldl (addStep True) [[0,0]] (take n $ randomRs(0,r) (mkStdGen m))
+randomWalk "No" n 2 r m = foldl (addStep False) [[0,0]] (take n $ randomRs(0,r) (mkStdGen m))
+randomWalk "Yes" n 3 r m = foldl (addStep True) [[0,0,0]] (take n $ randomRs(0,r) (mkStdGen m))
+randomWalk "No" n 3 r m = foldl (addStep False) [[0,0,0]] (take n $ randomRs(0,r) (mkStdGen m))
 --randomWalk n = foldl addStep [[0,0]] [1..10]
 
 vectorLength :: Floating a => [Int] -> a
@@ -67,5 +70,7 @@ main = do
   d <- getLine
   putStrLn "how many moves are possible for each step?"
   r <- getLine
-  let avLength = map (\x -> average $ map (vectorLength) $ map (head . randomWalk x (read d :: Int)  (read r :: Int)) [1..500]) [10..100]
+  putStrLn "is the random walk self avoiding?"
+  randomWalkSelfAvoiding <- getLine
+  let avLength = map (\x -> average $ map (vectorLength) $ map (head . randomWalk randomWalkSelfAvoiding x (read d :: Int)  (read r :: Int)) [1..500]) [10..100]
   putStrLn $ show avLength
