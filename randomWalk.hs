@@ -67,5 +67,5 @@ main = do
   d <- getLine
   putStrLn "how many moves are possible for each step?"
   r <- getLine
-  let avLength = average $ map (vectorLength) $ map (head . randomWalk 100 (read d :: Int)  (read r :: Int)) [1..500]
+  let avLength = map (\x -> average $ map (vectorLength) $ map (head . randomWalk x (read d :: Int)  (read r :: Int)) [1..500]) [10..100]
   putStrLn $ show avLength
