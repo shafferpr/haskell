@@ -1,6 +1,8 @@
 import Data.List
 import System.Random
-
+import System.IO
+import Text.Printf
+import Control.Monad
 --data Node = EmptyNode | Node Int [Int]
 
 --Network = [Node]
@@ -18,6 +20,7 @@ stringFunction st = [filter(==c) st | c <- st]
 
 numberOfEachElement :: (Eq a) => [a] -> [Int]
 numberOfEachElement st = map length (stringFunction st)
+
 
 nextStep :: [Int] -> Int -> [Int]
 nextStep [x,y] a
@@ -70,7 +73,16 @@ main = do
   d <- getLine
   putStrLn "how many moves are possible for each step?"
   r <- getLine
-  putStrLn "is the random walk self avoiding?"
+  putStrLn "is the random walk self avoiding? Answer Yes or No"
   randomWalkSelfAvoiding <- getLine
-  let avLength = map (\x -> average $ map (vectorLength) $ map (head . randomWalk randomWalkSelfAvoiding x (read d :: Int)  (read r :: Int)) [1..500]) [10..100]
-  putStrLn $ show avLength
+  putStrLn "what would you like to call the output file?"
+  outputFileName <- getLine
+  --let avLength = map (\x -> average $ map (vectorLength) $ map (head . randomWalk randomWalkSelfAvoiding x (read d :: Int)  (read r :: Int)) [1..1000]) [10..100]
+  let avlength = map (\y -> average $ map vectorLength $ map (!! y) $ filter (\xs -> length xs > 101) $ map (\x -> reverse (randomWalk randomWalkSelfAvoiding 1000 (read d :: Int) (read r :: Int) x)) [1..1000]) [0..100]
+  --sequence (map print avlength)
+  outh <- openFile outputFileName WriteMode
+  hPutStr outh $ unlines $ map show avlength
+  hClose outh
+  --let x = [0.0..20.0]
+  --writeDat "sa_2d.txt" avlength 3
+  --putStrLn $ show avLength
