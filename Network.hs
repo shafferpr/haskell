@@ -2,7 +2,10 @@ import Data.List
 import System.Random
 
 --data Node = EmptyNode | Node Int [Int]
-
+--data Node = Node {identifier :: Int, totalValue :: Float, connections :: [Int], connectionWeights :: [Float], connectionDerivatives :: [Float]}
+data SimpleNode = SimpleNode {identifier :: Int, connections :: [Int]} deriving (Show)
+--type Layer = [Node]
+--type Network = [Layer]
 --Network = [Node]
 
 --random walk
@@ -12,6 +15,22 @@ import System.Random
 --randomWalk xs = foldl foldingFunction [] xs
 --  where foldingFunction xs x = nextStep(head(xs)):xs
 
+buildNetwork :: Int -> [SimpleNode]
+buildNetwork a = foldl (addNodeToNetwork) [] [1..a]
+--buildNetwork a = foldl (addNodeToNetwork) [] (take a randomRs(0,1.0) (mkStdGen 1))
+
+addNodeToNetwork :: [SimpleNode] -> Int -> [SimpleNode]
+--addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = (map identifier xs)}):xs
+addNodeToNetwork [] a = [SimpleNode {identifier = a, connections = [2]}]
+addNodeToNetwork (x:[]) a = (SimpleNode {identifier = a, connections = [1]}):[x]
+addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = n}):newNetwork
+  where n =  map (\x -> (!! x) $ map identifier $ xs) (take 2 $ randomRs(0,(length xs)-1) (mkStdGen 1))
+        newNetwork = foldl (addConnectionToInternalNode a) xs n
+
+addConnectionToInternalNode :: Int -> [SimpleNode] -> Int -> [SimpleNode]
+--addConnectionToInternalNode xs a n = (filter (\x -> identifier x > n) xs) : (SimpleNode {identifier = n, connections = connections $ head $ filter (\x -> identifier x == n) xs}) : (filter (\x -> identifier x < n) xs)
+addConnectionToInternalNode a xs n = (filter (\x -> identifier x > n) xs) ++ [SimpleNode {identifier = n, connections = (connections $ head $ filter (\x -> identifier x == n) xs) ++ [a]}] ++ (filter (\x -> identifier x < n) xs)
+
 stringFunction :: (Eq a) => [a] -> [[a]]
 --stringFunction :: [Char] -> [[Char]]
 stringFunction st = [filter(==c) st | c <- st]
@@ -19,24 +38,5 @@ stringFunction st = [filter(==c) st | c <- st]
 numberOfEachElement :: (Eq a) => [a] -> [Int]
 numberOfEachElement st = map length (stringFunction st)
 
-nextStep :: [Int] -> Int -> [Int]
-nextStep [x,y] a
-  | a == 0 = [x+1,y]
-  | a == 1 = [x,y+1]
-  | a == 2 = [x+1, y+1]
-  | a == 3 = [x-1,y]
-  | a == 4 = [x, y-1]
-  | a == 5 = [x-1,y-1]
-
---nextStep [x,y] = if()
-
-addStep :: [[Int]] -> Int -> [[Int]]
-addStep [[]] a = [[0,0]]
-addStep xs a = if (nextStep (head xs) a) `elem` xs
-      then xs
-      else (nextStep (head xs) a) : xs
-
-
-randomWalk :: Int -> [[Int]]
-randomWalk n = foldl addStep [[0,0]] (take n $ randomRs(0,5) (mkStdGen 12))
---randomWalk n = foldl addStep [[0,0]] [1..10]
+--derivative :: Int -> Int -> Floating
+--derivative x y =  map (\z -> directDerivative x z * derivative z y )
