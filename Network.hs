@@ -22,20 +22,27 @@ buildNetwork a = foldl (addNodeToNetwork) [] [1..a]
 
 addNodeToNetwork :: [SimpleNode] -> Int -> [SimpleNode]
 --addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = (map identifier xs)}):xs
-addNodeToNetwork [] a = [SimpleNode {identifier = a, connections = [2,3]}]
-addNodeToNetwork (x:[]) a = (SimpleNode {identifier = a, connections = [1,3]}):[x]
-addNodeToNetwork xs@(x:y:[]) a = (SimpleNode {identifier = a, connections = [1,2]}):xs
+addNodeToNetwork [] a = [SimpleNode {identifier = a, connections = []}]
+addNodeToNetwork (x:[]) a = (SimpleNode {identifier = a, connections = []}):[x]
+addNodeToNetwork xs@(x:y:[]) a = (SimpleNode {identifier = a, connections = []}):xs
 addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = n}):newNetwork
-  where n =  map (\x -> (!! x) $ map identifier $ xs) (take 3 $ nub $ randomRs(0,(length xs)-1) (mkStdGen 3)) -- nub filters duplicates
+  where n =  map (\x -> (!! x) $ map identifier $ xs) (take 1 $ nub $ randomRs(0,(length xs)-1) (mkStdGen 3)) -- nub filters duplicates
         newNetwork = foldl (addConnectionToInternalNode a) xs n
 
+addConnectionToNetwork :: [SimpleNode] -> Int -> Int -> [SimpleNode]
+addConnectionToNetwork xs a b = addConnectionToInternalNode a newNetwork b
+  where newNetwork = addConnectionToInternalNode b xs a
 
---distanceBetweenNodes :: [SimpleNode] -> Int -> Int -> Int
---distanceBetweenNodes xs a a = 0
---distanceBetweenNodes xs a b = if (a `elem` conxns)
---      then 1
---      else 1 + (minimum $ map (distanceBetweenNodes xs a) conxns)
---      where conxns = connections $ head $ filter (\x -> identifier x == b) xs
+--this function should really return Maybe Int because two nodes may not be connected
+distanceBetweenNodes2 :: [SimpleNode] -> Int -> [Int] -> Maybe Int
+distanceBetweenNodes2 xs a b
+  | a `elem` b = Just 0
+  | a `elem` firstConnections = Just 1
+  | null firstConnections = Nothing
+  | otherwise = fmap (1+) (distanceBetweenNodes2 xs a (b ++ firstConnections))
+  where firstConnections = nub $ filter(\x -> not (x `elem` b)) $ concat $ map (conxns xs) b
+        --secondConnections = nub $ filter(\x -> not (x `elem` firstConnections)) $ concat $ map (conxns xs) firstConnections
+
 
 distanceBetweenNodes :: [SimpleNode] -> Int -> Int -> [Int] -> Int
 distanceBetweenNodes xs a b firstConnections
@@ -44,6 +51,7 @@ distanceBetweenNodes xs a b firstConnections
   | otherwise = 1 + distanceBetweenNodes xs a b secondConnections
   -- | otherwise = 1 + (minimum' $ map (distanceBetweenNodes xs a) connectedNodes)
   where secondConnections = concat $ map (conxns xs) firstConnections
+
 
 
 conxns :: [SimpleNode] -> Int -> [Int]
@@ -58,7 +66,6 @@ minimum' xs
 --how to make probability of connection to well connected nodes higher
 
 addConnectionToInternalNode :: Int -> [SimpleNode] -> Int -> [SimpleNode]
---addConnectionToInternalNode xs a n = (filter (\x -> identifier x > n) xs) : (SimpleNode {identifier = n, connections = connections $ head $ filter (\x -> identifier x == n) xs}) : (filter (\x -> identifier x < n) xs)
 addConnectionToInternalNode a xs n = (filter (\x -> identifier x > n) xs) ++ [SimpleNode {identifier = n, connections = (connections $ head $ filter (\x -> identifier x == n) xs) ++ [a]}] ++ (filter (\x -> identifier x < n) xs)
 
 stringFunction :: (Eq a) => [a] -> [[a]]
