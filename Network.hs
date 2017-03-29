@@ -20,17 +20,28 @@ buildNetwork :: Int -> [SimpleNode]
 buildNetwork a = foldl (addNodeToNetwork) [] [1..a]
 --buildNetwork a = foldl (addNodeToNetwork) [] (take a randomRs(0,1.0) (mkStdGen 1))
 
+buildEmptyNetwork :: Int -> [SimpleNode]
+buildEmptyNetwork a = foldl (addUnconnectedNodeToNetwork) [] [1..a]
+
+addUnconnectedNodeToNetwork :: [SimpleNode] -> Int -> [SimpleNode]
+addUnconnectedNodeToNetwork xs a = (SimpleNode {identifier = a, connections = []}):xs
+
+addRandomConnectionsToNetwork :: Int -> [SimpleNode] -> [SimpleNode]
+addRandomConnectionsToNetwork a xs = foldl addConnectionToNetwork xs (zip (take a $ nub $ randomRs(1,length xs) (mkStdGen 3)) (take a $ nub $ randomRs(1,length xs) (mkStdGen 4)))
+
+--take a $ nub $ randomRs(0,(length xs)-1) (mkStdGen 3)
+
 addNodeToNetwork :: [SimpleNode] -> Int -> [SimpleNode]
 --addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = (map identifier xs)}):xs
-addNodeToNetwork [] a = [SimpleNode {identifier = a, connections = []}]
-addNodeToNetwork (x:[]) a = (SimpleNode {identifier = a, connections = []}):[x]
+addNodeToNetwork [] a = [SimpleNode {identifier = a, connections = [2,3]}]
+addNodeToNetwork (x:[]) a = (SimpleNode {identifier = a, connections = [1,3]}):[x]
 addNodeToNetwork xs@(x:y:[]) a = (SimpleNode {identifier = a, connections = []}):xs
 addNodeToNetwork xs a = (SimpleNode {identifier = a, connections = n}):newNetwork
   where n =  map (\x -> (!! x) $ map identifier $ xs) (take 1 $ nub $ randomRs(0,(length xs)-1) (mkStdGen 3)) -- nub filters duplicates
         newNetwork = foldl (addConnectionToInternalNode a) xs n
 
-addConnectionToNetwork :: [SimpleNode] -> Int -> Int -> [SimpleNode]
-addConnectionToNetwork xs a b = addConnectionToInternalNode a newNetwork b
+addConnectionToNetwork :: [SimpleNode] -> (Int,Int) -> [SimpleNode]
+addConnectionToNetwork xs (a,b) = addConnectionToInternalNode a newNetwork b
   where newNetwork = addConnectionToInternalNode b xs a
 
 --this function should really return Maybe Int because two nodes may not be connected
