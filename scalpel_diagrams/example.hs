@@ -11,6 +11,10 @@ import Control.Applicative
 import Data.Monoid
 import Data.Maybe
 import qualified Data.Set as Set
+import qualified Data.Map as Map
+import Data.Function
+import Data.List
+import qualified GHC.Float as Float
 
 type Author = String
 
@@ -26,18 +30,18 @@ takeComment (TextComment a) = a
 takeComments :: Maybe [Comment] -> Maybe [String]
 takeComments = fmap (map takeComment)
 
-node :: String -> Diagram B
-node n = Prelude.text (show n) # fontSizeL 0.15 # fc white
-      Prelude.<> circle 0.2 # fc green # named n
+node :: (String,Float) -> Diagram B
+node (n,x) = Prelude.text (show n) # fontSizeL 0.15 # fc white
+      Prelude.<> circle (Float.float2Double x) # fc green # named n
 
 arrowOpts = with & gaps       .~ small
                   & headLength .~ local 0.0
 
-tournament :: [String] -> Diagram B
+tournament :: [(String,Float)] -> Diagram B
 tournament xs = atPoints (trailVertices $ regPoly (length xs) 1) (map node xs)
   -- # applyAll [connectOutside' arrowOpts j k | j <- xs, k <- xs]
 
-example :: [String] -> Diagram B
+example :: [(String,Float)] -> Diagram B
 example xs = tournament xs
 
 
@@ -46,8 +50,14 @@ main = do
   xs <- sequence $ map (\x -> takeComments <$> (allComments x)) [13]
   --xs <- sequence $ map (\x -> fmap takeComments (fmap fromJust $ allComments x)) [12..13]
   --let set1 = Set.fromList $ concat $ map words $ map concat xs
-  let set1 = Set.fromList $ listOfWords xs
-  mainWith $ example $ take 5 $ Set.elems set1
+  let fullList = listOfWords xs
+  let set1 = Set.fromList $ fullList
+  let map1 = Map.fromListWith (+) (zip fullList [0.1,0.1..])
+  mainWith $ example $ take 6 $ sortListBySecondElement (Map.toList map1)
+  --mainWith $ example $ take 5 $ Set.elems set1
+
+sortListBySecondElement :: (Ord b) => [(a,b)] -> [(a,b)]
+sortListBySecondElement xs = reverse $ sortBy (compare `on` snd) xs
 
 listOfWords :: [Maybe [String]] -> [String]
 listOfWords xs = words $ concat $ concat $ concat <$> xs
