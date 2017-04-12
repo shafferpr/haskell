@@ -67,14 +67,15 @@ main :: IO ()
 main = do
   commonWords <- getLines "1000.txt"
   let commonWordsSet = Set.fromList $ map (map toLower) commonWords
-  --mapM_ putStrLn commonWords
-  questions <- sequence $ map (\x -> getComment x "question") [50..250]
-  answers <- sequence $ map (\x -> getComment x "answer") [50..250]
+  mapM_ putStrLn commonWords
+  questions <- sequence $ map (\x -> getComment x "question") [72074..72076]
+  answers <- sequence $ map (\x -> getComment x "answer") [72074..72076]
   let xs = zipWith (\x y -> (++) <$> x <*> y) questions answers
   --xs <- sequence $ map (\x -> (++) <$> (getComment x "question" ) <*> ( getComment x "answer")) [50..200]
   --xs <- sequence $ map (\x -> fmap takeComments (fmap fromJust $ allComments x)) [12..13]
   --let set1 = Set.fromList $ concat $ map words $ map concat xs
   let fullList = listOfWords xs
+  mapM_ putStrLn (take 10 fullList)
   let set1 = Set.fromList $ fullList
   --let uniqueWords = Set.difference set1 $ commonWordsSet
   let reducedList = filterCommonWords fullList commonWordsSet --creates the list of unusual words, preserving duplicates
@@ -84,8 +85,9 @@ main = do
   let mapOfWords = createMapOfWords zs zeroMap --creates the 2-key map
   let map1 = Map.fromListWith (+) (zip reducedList [0.1,0.1..]) --creates the map that counts the number of appearances of each word
   --mapM_ putStrLn commonWords
+  mapM_ putStrLn reducedList
   mainWith $ example ( take 7 $ sortListBySecondElement (Map.toList map1)) mapOfWords
-  mapM_ putStrLn ( take 25 $ map fst $ sortListBySecondElement (Map.toList map1))
+  mapM_ putStrLn (take 25 $ map fst $ sortListBySecondElement (Map.toList map1))
   --mainWith $ example $ take 5 $ Set.elems set1
 
 createZeroMap :: [String] -> Map.Map String (Map.Map String Float)
@@ -119,7 +121,7 @@ listOfWordsInPost :: Maybe [String] -> [String]
 listOfWordsInPost xs = map (map toLower) $ words $ concat $ concat <$> xs
 
 allPosts :: Int -> String -> IO (Maybe [Comment]) --returns an IO action with a type of Maybe [Comment]
-allPosts a xs = scrapeURL ("https://physics.stackexchange.com/questions/" ++ show a ++ "/") answerComments
+allPosts a xs = scrapeURL ("https://chemistry.stackexchange.com/questions/" ++ show a ++ "/") answerComments
    where
        answerComments :: Scraper String [Comment]
        answerComments =  (chroots ("div"  @: [hasClass xs]) comment)

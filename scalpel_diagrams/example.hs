@@ -43,6 +43,7 @@ arrowOpts = with & gaps       .~ small
                  & headLength .~ local 0.000
                     -- & shaftStyle %~ lwL 0.1 .lc blue
 
+
 tournament :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
 tournament xs mp = atPoints (trailVertices $ regPoly (length xs) 1) (map (node maxSize) xs)
     # applyAll [connectOutside' (arrowOpts & shaftStyle %~ lwL (Float.float2Double (0.06*(connectionStrength (fst j) (fst k) mp)/maxStrength)) .lc blue) (fst j) (fst k) | j <- xs, k <- xs]
@@ -65,7 +66,7 @@ main = do
   commonWords <- getLines "1000.txt"
   let commonWordsSet = Set.fromList $ map (map toLower) commonWords
   --mapM_ putStrLn commonWords
-  xs <- sequence $ map (\x -> takeComments <$> (allComments x)) [50..200]
+  xs <- sequence $ map (\x -> takeComments <$> (allComments x)) [50..10000]
   --xs <- sequence $ map (\x -> fmap takeComments (fmap fromJust $ allComments x)) [12..13]
   --let set1 = Set.fromList $ concat $ map words $ map concat xs
   let fullList = listOfWords xs
@@ -78,7 +79,7 @@ main = do
   let mapOfWords = createMapOfWords zs zeroMap --creates the 2-key map
   let map1 = Map.fromListWith (+) (zip reducedList [0.1,0.1..]) --creates the map that counts the number of appearances of each word
   --mapM_ putStrLn commonWords
-  mainWith $ example ( take 7 $ sortListBySecondElement (Map.toList map1)) mapOfWords
+  mainWith $ example ( take 25 $ sortListBySecondElement (Map.toList map1)) mapOfWords
   mapM_ putStrLn ( take 25 $ map fst $ sortListBySecondElement (Map.toList map1))
   --mainWith $ example $ take 5 $ Set.elems set1
 
