@@ -113,6 +113,21 @@ pairwiseInteraction x y
     | abs (x-y) >= 10 = (20 - abs (x-y))*(20 - abs (x-y))
     | otherwise = (x-y)*(x-y)
 
+forces :: (Num a) => [(a,a)] -> [(a,a)]
+forces [] = []
+forces (x:[]) = [x]
+forces (x:y:[]) = [(fst x, pair (fst x) (fst y)), (fst y, pair (fst y) (fst x))]
+forces (x:xs) = (fst x, sum $ map (\q -> pair (fst q) (fst x)) xs) : (map (\(a,b) -> (a, b + (pair a (fst x)))) $ (forces xs))
+
+
+pair :: (Num a) => a -> a -> a
+pair x y = x+y
+
+
+
+
+
+
 data Shape = Circle Float Float Float | Rectangle Float Float Float Float deriving (Show)
 
 surface :: Shape -> Float

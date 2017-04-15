@@ -33,8 +33,6 @@ data Answer =
          } deriving (Show, Generic)
 
 
-
-
 data Question =
   Question {
             question_id :: Int
@@ -51,11 +49,7 @@ data APIQuery =
           , page :: Int
             } deriving (Show, Generic)
 
-
-
 -- Automatically generated instances
-
-
 instance FromJSON Question
 instance ToJSON Question
 
@@ -102,7 +96,7 @@ example :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram 
 example xs mp = tournament xs mp
 
 jsonURL :: Int -> String
-jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=100&order=desc&sort=activity&site=physics&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
+jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=10&order=desc&sort=activity&site=3dprinting&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
 
 getJSON :: Int -> IO B.ByteString
 getJSON a = simpleHttp $ jsonURL a
@@ -117,7 +111,7 @@ main :: IO ()
 main = do
   commonWords <- getLines "1000.txt"
   let commonWordsSet = Set.fromList $ map (map toLower) commonWords
-  xs <- sequence $ map (\x -> fromJust <$> getPage x) [1..30]
+  xs <- sequence $ map (\x -> fromJust <$> getPage x) [1..20]
   let allQuestions = concat xs
   let ys = listOfQuestions allQuestions
   let zs = listOfQuestionsAndAnswers allQuestions
