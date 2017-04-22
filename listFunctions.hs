@@ -123,7 +123,10 @@ forces (x:xs) = (fst x, sum $ map (\q -> pair (fst q) (fst x)) xs) : (map (\(a,b
 pair :: (Num a) => a -> a -> a
 pair x y = x+y
 
-
+sumLists :: (Num a) => [[a]] -> [a]
+sumLists (x:[]) = x
+sumLists (x:y:[]) = zipWith (+) x y
+sumLists (x:xs) = zipWith (+) x $ sumLists xs
 
 
 

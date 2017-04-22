@@ -96,7 +96,7 @@ example :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram 
 example xs mp = tournament xs mp
 
 jsonURL :: Int -> String
-jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=10&order=desc&sort=activity&site=3dprinting&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
+jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=10&order=desc&sort=activity&site=dba&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
 
 getJSON :: Int -> IO B.ByteString
 getJSON a = simpleHttp $ jsonURL a
