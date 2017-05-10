@@ -21,24 +21,12 @@ import System.Random
 import Text.Printf
 import System.IO
 
-type Author = String
-
-data Comment
-    = TextComment String
-    deriving (Show, Eq)
---type Comment = String
-
-takeComment :: Comment -> String
-takeComment (TextComment a) = a
---takeComment (ImageComment a b) = b
-
-takeComments :: Maybe [Comment] -> Maybe [String]
-takeComments = fmap (map takeComment)
-
+type ListOfPairs = [(String,Float)]
 
 node :: Float -> (String,Float) -> Diagram B
 node maxSize (n,x) = Prelude.text (show n) # fontSizeL 0.08 # fc white
       Prelude.<> circle (Float.float2Double (0.2*(x/maxSize))) # fc green # named n
+
 
 
 shaft1 = trailFromVertices (map p2 [(0, 0), (1, 0), (1, 0.2), (2, 0.2)])
@@ -74,35 +62,19 @@ example2 listOfPositions xs mp = tournament2 (listToTuple listOfPositions) xs mp
 example :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
 example xs mp = tournament xs mp
 
-getLines :: FilePath -> IO [String]
-getLines = liftM lines . readFile
+
 
 main :: IO ()
 main = do
-  commonWords <- getLines "1000.txt"
-  let commonWordsSet = Set.fromList $ map (map toLower) commonWords
-  --mapM_ putStrLn commonWords
-  xs <- sequence $ map (\x -> takeComments <$> (allComments x)) [1000..1100]
-  --xs <- sequence $ map (\x -> fmap takeComments (fmap fromJust $ allComments x)) [12..13]
-  --let set1 = Set.fromList $ concat $ map words $ map concat xs
-  let fullList = listOfWords xs
-  let set1 = Set.fromList $ fullList
-  --let uniqueWords = Set.difference set1 $ commonWordsSet
-  let reducedList = filterCommonWords fullList commonWordsSet --creates the list of unusual words, preserving duplicates
-  let zeroMap = createZeroMap $ nub reducedList --creates the zero map (the map which has two keys for each pair of words and value of zero for each element), removing duplicate words
-  let ys = nub $ map listOfWordsInPost xs --creates the list of lists of words in each post, removing duplicate posts
-  let zs = map (\x -> filterCommonWords x commonWordsSet ) ys --creates the list of lists of words in each post, removing common words, and removing duplicate words from each post
-  let mapOfWords = createMapOfWords zs zeroMap --creates the 2-key map
-  let map1 = Map.fromListWith (+) (zip reducedList [0.1,0.1..]) --creates the map that counts the number of appearances of each word
-  --mapM_ putStrLn commonWords
-  outh <- openFile "listofwords.txt" WriteMode
-  hPrint outh $ take 35 $ sortListBySecondElement (Map.toList map1)
-  outh <- openFile "mapofwords.txt" WriteMode
-  hPutStr outh $ show $ Map.toList $ fmap (Map.toList) mapOfWords
-  let positions = allPositions (take 35 $ sortListBySecondElement (Map.toList map1) ) mapOfWords 35
-  mainWith $ example2 positions ( take 35 $ sortListBySecondElement (Map.toList map1)) mapOfWords
+  readData <- readFile "listofwords.txt"
+  let listOfWords = read readData :: [(String,Float)]
+  readMap <- readFile "mapofwords.txt"
+  let mapOfWords = read readMap :: [(String,[(String,Float)])]
+  --let positions = allPositions listOfWords mapOfWords 35
+  mapM_ putStrLn $ map fst listOfWords
+  --mainWith $ example2 positions ( take 35 $ sortListBySecondElement (Map.toList map1)) mapOfWords
   --mapM_ putStrLn ( take 100 $ sortListBySecondElement (Map.toList map1))
-  mapM_ putStrLn ( take 100 $ map fst $ sortListBySecondElement (Map.toList map1))
+  --mapM_ putStrLn ( take 100 $ map fst $ sortListBySecondElement (Map.toList map1))
   --mainWith $ example $ take 5 $ Set.elems set1
 
 allPositions :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> [[Float]]
@@ -164,40 +136,3 @@ updateMap word1 word2 xm = Map.adjust (\q -> Map.adjust (+0.00002) word2 q) word
 
 sortListBySecondElement :: (Ord b) => [(a,b)] -> [(a,b)]
 sortListBySecondElement xs = reverse $ sortBy (compare `on` snd) xs
-
-listOfWords :: [Maybe [String]] -> [String]
-listOfWords xs = map (map toLower) $ words $ concat $ concat $ concat <$> xs
-
-filterCommonWords :: [String] -> Set.Set String -> [String]
-filterCommonWords xs commonWordsSet = containsLetters $ filter (\x -> Set.notMember x commonWordsSet) xs --filter out common words, and only keep words that have letters in them
-  where containsLetters ys = filter (\xw -> or $ map(\x -> elem x ['a'..'z']) xw) ys
-
-listOfWordsInPost :: Maybe [String] -> [String]
-listOfWordsInPost xs = map (map toLower) $ words $ concat $ concat <$> xs
-
-allComments :: Int -> IO (Maybe [Comment]) --returns an IO action with a type of Maybe [Comment]
-allComments a = scrapeURL ("https://www.biostars.org/p/" ++ show a ++ "/") comments
-   where
-       comments :: Scraper String [Comment]
-       comments = chroots ("div"  @: [hasClass "post-body"]) comment
-       --comments = chroots ("span" @: ["itemprop" @= "text"] // "p") comment
-
-       comment :: Scraper String Comment
-       comment = textComment
-       --comment = textComment <|> imageComment
-
-       textComment :: Scraper String Comment
-       textComment = do
-           --author      <- text $ "div" @: [hasClass "uname"]
-           --commentText <- text $ "div"  @: [hasClass "post-body"] // "p"
-           commentText <- Scalpel.text $ "span" @: ["itemprop" @= "text"]
-           --commentText <- text $ "div"  @: [hasClass "content"]
-           --commentText <- text $ anySelector
-           return $ TextComment commentText
-
-
-       --imageComment :: Scraper String Comment
-       --imageComment = do
-      --     author   <- text       $ "span" @: [hasClass "author"]
-      --     imageURL <- attr "src" $ "img"  @: [hasClass "image"]
-      --     return $ ImageComment author imageURL
