@@ -30,7 +30,7 @@ allPositions xs mp n = foldl (minimize xs mp) pos_init [1..20]
         tupleToList = map (\(x,y) -> [x,y])
 
 allPositionsTraj :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> [[[Float]]]
-allPositionsTraj xs mp n = scanl (minimize xs mp) pos_init [1..50]
+allPositionsTraj xs mp n = scanl (minimize xs mp) pos_init [1..100]
   where pos_init = tupleToList $ zip (take (length xs) $ randomRs(0.0,2.0) (mkStdGen 6)) (take (length xs) $ randomRs(0.0,2.0) (mkStdGen 9))
   --where pos_init = map(\(x,y) -> [Float.double2Float x, Float.double2Float y]) $ map unp2 (trailVertices $ regPoly (length xs) 1)
         tupleToList = map (\(x,y) -> [x,y])
