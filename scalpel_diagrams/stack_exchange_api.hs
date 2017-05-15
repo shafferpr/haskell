@@ -5,9 +5,7 @@
 {-# LANGUAGE TypeFamilies              #-}
 
 
-import Diagrams.Prelude as Prelude
 import Diagrams.Backend.SVG.CmdLine
-import Diagrams.TwoD.Arrow
 import Data.Aeson as Aeson
 import GHC.Generics
 import Network.HTTP.Conduit (simpleHttp)
@@ -22,6 +20,9 @@ import Data.Char
 import Data.List
 import Data.Function
 import qualified GHC.Float as Float
+import DiagramStyle
+import PositionNodes
+import WordListFunctions
 -- | Type of conversion, analogous to the JSON data obtainable
 --   from the URL.
 
@@ -69,32 +70,6 @@ instance FromJSON Answer where
   parseJSON _ = mzero
 
 
-node :: Float -> (String,Float) -> Diagram B
-node maxSize (n,x) = Prelude.text (show n) # fontSizeL 0.08 # fc white
-      Prelude.<> circle (Float.float2Double (0.2*(x/maxSize))) # fc green # named n
-
-
-shaft1 = trailFromVertices (map p2 [(0, 0), (1, 0), (1, 0.2), (2, 0.2)])
-
-arrowOpts = with & gaps       .~ small
-                 & headLength .~ local 0.000
-                    -- & shaftStyle %~ lwL 0.1 .lc blue
-
-
-tournament :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
-tournament xs mp = atPoints (trailVertices $ regPoly (length xs) 1) (map (node maxSize) xs)
-    # applyAll [connectOutside' (arrowOpts & shaftStyle %~ lwL (Float.float2Double (0.06*(connectionStrength (fst j) (fst k) mp)/maxStrength)) .lc blue) (fst j) (fst k) | j <- xs, k <- xs]
-      where maxStrength = maximum [connectionStrength (fst j) (fst k) mp | j <- xs, k <- xs]
-            maxSize = maximum (map snd xs)
-   -- # applyAll [connectOutside' (with & gaps  .~ small & headLength .~ local 0.0 & shaftStyle lw 0.1) j k | j <- xs, k <- xs]
-
-connectionStrength :: String -> String -> Map.Map String (Map.Map String Float) -> Float
-connectionStrength xs ys mp = fromJust $ fromJust $ fmap (Map.lookup ys) (Map.lookup xs mp)
-
-
-example :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
-example xs mp = tournament xs mp
-
 jsonURL :: Int -> String
 jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=10&order=desc&sort=activity&site=dba&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
 
@@ -121,7 +96,9 @@ main = do
   let zeroMap = createZeroMap $ nub reducedList
   let mapOfWords = createMapOfWords wordsInPosts zeroMap
   let map1 = Map.fromListWith (+) (zip reducedList [0.1,0.1..])
-  mainWith $ example ( take 25 $ sortListBySecondElement (Map.toList map1)) mapOfWords
+  let positions = allPositions (take 35 $ sortListBySecondElement (Map.toList map1) ) mapOfWords 35
+  --mainWith $ example ( take 25 $ sortListBySecondElement (Map.toList map1)) mapOfWords
+  mainWith $ example2 positions ( take 35 $ sortListBySecondElement (Map.toList map1)) mapOfWords
   mapM_ putStrLn ( take 25 $ map fst $ sortListBySecondElement (Map.toList map1))
   --c <- (decode <$> getJSON 2) :: IO (Maybe APIQuery)
   --d <- (decode $ getJSON) :: IO (Either String APIQuery)
@@ -131,18 +108,6 @@ main = do
 sortListBySecondElement :: (Ord b) => [(a,b)] -> [(a,b)]
 sortListBySecondElement xs = reverse $ sortBy (compare `on` snd) xs
 
-createMapOfWords :: [[String]] -> Map.Map String (Map.Map String Float) -> Map.Map String (Map.Map String Float)
-createMapOfWords xs emptyMap = foldl (foldingFunction) emptyMap xs
-
-foldingFunction :: Map.Map String (Map.Map String Float) -> [String] -> Map.Map String (Map.Map String Float)
-foldingFunction xm xs = foldl (\acc (a,b) -> updateMap a b acc) xm [(x,y) | x <- xs, y <- xs]
-
-updateMap :: String -> String -> Map.Map String (Map.Map String Float) -> Map.Map String (Map.Map String Float)
-updateMap word1 word2 xm = Map.adjust (\q -> Map.adjust (+0.00002) word2 q) word1 xm
-
-createZeroMap :: [String] -> Map.Map String (Map.Map String Float)
-createZeroMap xs = Map.fromList (zip xs (cycle [simpleList]) )
-  where simpleList = Map.fromList (zip xs [0,0..])
 
 filterCommonWords :: [String] -> Set.Set String -> [String]
 filterCommonWords xs commonWordsSet = containsLetters $ filter (\x -> Set.notMember x commonWordsSet) xs --filter out common words, and only keep words that have letters in them

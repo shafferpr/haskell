@@ -10,7 +10,9 @@ example2
 {-# LANGUAGE TypeFamilies              #-}
 
 import Diagrams.Prelude as Prelude
+import Data.Active as Active
 import Diagrams.Backend.SVG.CmdLine
+import Diagrams.Backend.SVG
 import Diagrams.TwoD.Arrow
 
 import Data.Maybe
