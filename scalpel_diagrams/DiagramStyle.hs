@@ -24,7 +24,7 @@ import qualified GHC.Float as Float
 
 node :: Float -> (String,Float) -> Diagram B
 node maxSize (n,x) = Prelude.text (show n) # fontSizeL 0.08 # fc white
-      Prelude.<> circle (Float.float2Double (0.2*(x/maxSize))) # fc green # named n
+      Prelude.<> circle (Float.float2Double (0.32*(x/maxSize))) # fc green # named n
 
 
 
@@ -37,7 +37,7 @@ arrowOpts = with & gaps       .~ small
 --tournament2 takes a list of positions rather than constucting a polygon
 tournament2 :: [(Float,Float)] -> [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
 tournament2 listOfPositions xs mp = atPoints (map p2 $ doublePositions) (map (node maxSize) xs)
-        # applyAll [connectOutside' (arrowOpts & shaftStyle %~ lwL (Float.float2Double (0.06*(connectionStrength (fst j) (fst k) mp)/maxStrength)) .lc blue) (fst j) (fst k) | j <- xs, k <- xs]
+        # applyAll [connectOutside' (arrowOpts & shaftStyle %~ lwL (Float.float2Double (0.05*(connectionStrength (fst j) (fst k) mp)/maxStrength)) .lc blue) (fst j) (fst k) | j <- xs, k <- xs]
           where maxStrength = maximum [connectionStrength (fst j) (fst k) mp | j <- xs, k <- xs]
                 maxSize = maximum (map snd xs)
                 doublePositions = map(\(x,y) -> (Float.float2Double x, Float.float2Double y)) listOfPositions
