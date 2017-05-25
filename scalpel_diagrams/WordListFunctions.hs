@@ -3,7 +3,14 @@ module WordListFunctions
 createZeroMap,
 createMapOfWords,
 filterMap,
-groupWords
+groupWords,
+divideSet,
+conxnToGroup,
+updateGroups,
+newGrouping,
+maxConnectionGroup,
+connectivity,
+connectionStrength
 )where
 
 {-# LANGUAGE OverloadedStrings #-}
@@ -66,6 +73,9 @@ newGrouping mp ys@(x:xs) _ = moveHeadToEnd $ foldl (maxConnectionGroup mp) ys x
     where moveHeadToEnd (q:qs) = qs++[q]
 
 maxConnectionGroup :: Map.Map String (Map.Map String Float) -> [Set.Set String] -> String -> [Set.Set String]
+maxConnectionGroup mp (x:y:[]) xw = if ((connectivity mp xw x) > (connectivity mp xw y))
+                                    then (Set.insert xw x):[y]
+                                    else (Set.delete xw x):[Set.insert xw y]
 maxConnectionGroup mp (x:xs) xw = if ((connectivity mp xw x) > (maximum $ map (connectivity mp xw) xs))
                                   then (Set.insert xw x):xs
                                   else (Set.delete xw x):(maxConnectionGroup mp xs xw)
