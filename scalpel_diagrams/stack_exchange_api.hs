@@ -74,7 +74,7 @@ instance FromJSON Answer where
 
 
 jsonURL :: Int -> String
-jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=100&order=desc&sort=activity&site=dba&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
+jsonURL a = "https://api.stackexchange.com/2.2/questions?page=" ++ show a ++ "&pagesize=100&order=desc&sort=activity&site=physics&filter=!DER*bZIt1fz(_v-)6.c3jG15.0WMnEJGtH3Tl.9kKgRlWn(TVae"
 
 getJSON :: Int -> IO B.ByteString
 getJSON a = simpleHttp $ jsonURL a
@@ -86,7 +86,7 @@ getLines :: FilePath -> IO [String]
 getLines = liftM lines . readFile
 
 main :: IO [()]
-main = sequence $ map createFigure [1..2]
+main = sequence $ map createFigure [1]
 
   --c <- (decode <$> getJSON 2) :: IO (Maybe APIQuery)
   --d <- (decode $ getJSON) :: IO (Either String APIQuery)
@@ -108,15 +108,15 @@ createFigure n = do
   let zeroMap = createZeroMap $ nub reducedList
   let mapOfWords = createMapOfWords wordsInPostsFiltered zeroMap
   let map1 = Map.fromListWith (+) (zip reducedList [0.1,0.1..])
-  let wordList = take 13 $ sortListBySecondElement (Map.toList map1)
+  let wordList = take 15 $ sortListBySecondElement (Map.toList map1)
   let subMap = filterMap mapOfWords $ map fst wordList
-  let positions = allPositions wordList subMap 13
+  let positions = allPositions wordList subMap 15
   --mainWith $ example ( take 25 $ sortListBySecondElement (Map.toList map1)) mapOfWords
   let dimensions = (TwoDSize.mkSizeSpec2D (Just 400) (Just 400))
   let positionsWithIndex = zip positions [1..]
-  renderSVG ("SQl" ++ show n ++ ".svg") dimensions (example2 positions wordList subMap)
+  renderSVG ("physics" ++ show n ++ ".svg") dimensions (example2 positions wordList subMap)
   --mainWith $ example2 positions  mapOfWords
-  mapM_ putStrLn ( take 25 $ map fst $ sortListBySecondElement (Map.toList map1))
+  mapM_ putStrLn ( take 300 $ map show $ sortListBySecondElement (Map.toList map1))
 
 
 sortListBySecondElement :: (Ord b) => [(a,b)] -> [(a,b)]

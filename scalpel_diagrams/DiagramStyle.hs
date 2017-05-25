@@ -24,7 +24,7 @@ import qualified GHC.Float as Float
 
 node :: Float -> (String,Float) -> Diagram B
 node maxSize (n,x) = Prelude.text (show n) # fontSizeL 0.08 # fc white
-      Prelude.<> circle (Float.float2Double (0.32*(x/maxSize))) # fc green # named n
+      Prelude.<> circle (Float.float2Double (0.35*(x/maxSize))) # fc green # named n
 
 
 
@@ -35,8 +35,8 @@ arrowOpts = with & gaps       .~ small
                     -- & shaftStyle %~ lwL 0.1 .lc blue
 
 --tournament2 takes a list of positions rather than constucting a polygon
-tournament2 :: [(Float,Float)] -> [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
-tournament2 listOfPositions xs mp = atPoints (map p2 $ doublePositions) (map (node maxSize) xs)
+tournament2 :: [(Float,Float)] -> [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> Diagram B
+tournament2 listOfPositions xs mp n = Prelude.text (show n) # fontSizeL 0.13 # translate (r2 (1,-0.3)) Prelude.<> atPoints (map p2 $ doublePositions) (map (node maxSize) xs)
         # applyAll [connectOutside' (arrowOpts & shaftStyle %~ lwL (Float.float2Double (0.05*(connectionStrength (fst j) (fst k) mp)/maxStrength)) .lc blue) (fst j) (fst k) | j <- xs, k <- xs]
           where maxStrength = maximum [connectionStrength (fst j) (fst k) mp | j <- xs, k <- xs]
                 maxSize = maximum (map snd xs)
@@ -54,8 +54,8 @@ connectionStrength :: String -> String -> Map.Map String (Map.Map String Float) 
 connectionStrength xs ys mp = fromJust $ fromJust $ fmap (Map.lookup ys) (Map.lookup xs mp)
 
 
-example2 :: [[Float]] -> [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B
-example2 listOfPositions xs mp = tournament2 (listToTuple listOfPositions) xs mp
+example2 :: [[Float]] -> [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> Diagram B
+example2 listOfPositions xs mp n = tournament2 (listToTuple listOfPositions) xs mp n
       where listToTuple = map (\[x,y] -> (x,y))
 
 example :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Diagram B

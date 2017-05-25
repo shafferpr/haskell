@@ -23,10 +23,10 @@ connectionStrength :: String -> String -> Map.Map String (Map.Map String Float) 
 connectionStrength xs ys mp = fromJust $ fromJust $ fmap (Map.lookup ys) (Map.lookup xs mp)
 
 allPositions :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> [[Float]]
-allPositions xs mp n = foldl (minimize xs mp) pos_init [1..150]
+allPositions xs mp n = foldl (minimize xs mp) pos_init [1..300]
   --where pos_init = map(\(x,y) -> [Float.double2Float x, Float.double2Float y]) $ map unp2 (trailVertices $ regPoly (length xs) 1)
   --where pos_init = [[0,1],[1,0],[2,0]]
-  where pos_init = tupleToList $ zip (take (length xs) $ randomRs(0,2) (mkStdGen 6)) (take (length xs) $ randomRs(0,2) (mkStdGen 9))
+  where pos_init = [[0,0],[0,2],[2,2],[2,0]] ++ ( tupleToList $ zip (take (length xs - 4) $ randomRs(0,2) (mkStdGen 6)) (take (length xs - 4) $ randomRs(0,2) (mkStdGen 9)))
         tupleToList = map (\(x,y) -> [x,y])
 
 allPositionsTraj :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> Int -> [[[Float]]]
@@ -37,7 +37,7 @@ allPositionsTraj xs mp n = scanl (minimize xs mp) pos_init [1..140]
 
 
 minimize :: [(String,Float)] -> Map.Map String (Map.Map String Float) -> [[Float]] -> Int -> [[Float]]
-minimize xs mp pos_init n = zipWith (\[x,y] [z,q] -> [x+0.03*z, y+0.03*q] ) pos_init derivatives
+minimize xs mp pos_init n = [[0,0],[0,2],[2,2],[2,0]] ++ (drop 4 $ zipWith (\[x,y] [z,q] -> [x+0.03*z, y+0.03*q] ) pos_init derivatives)
   where derivatives = derivs pos_init xs mp
 
 
@@ -68,7 +68,7 @@ pairTot (a,b,c) (d,e,f) xs mp = (a, zipWith (+) b (pair a d w cnxnValue), c)
           maxConnection = fst $ head $ sortListBySecondElement $ Map.toList $ Map.filterWithKey (\k _ -> k `elem` mostFrequentWords) $ fromJust $ Map.lookup c mp
           w = if ((c `elem` mostFrequentWords) && (f `elem` mostFrequentWords))
               then 1.8
-              else 0.5
+              else 0.65
           cnxnValue
             | ((c `elem` mostFrequentWords) && (f `elem` mostFrequentWords)) = 1
             | f == maxConnection = 1
@@ -93,7 +93,7 @@ pairTot (a,b,c) (d,e,f) xs mp = (a, zipWith (+) b (pair a d w cnxnValue), c)
 --        multFactor = -2*c*(distance-w)*distance
 
 pair :: [Float] -> [Float] -> Float -> Float -> [Float]
-pair p1 p2 w c = if (distance > 0.3 )
+pair p1 p2 w c = if (distance > 0.32 )
                  then map( multFactor* ) $ zipWith (-) p1 p2
                  else map( (multFactor + (1/distance))* ) $ zipWith (-) p1 p2
   where distance = sqrt $ sum $ map (^2) $ zipWith (-) p1 p2
