@@ -48,7 +48,7 @@ filterMap mp xs = filterTopWords $ Map.map (filterTopWords) mp
 
 
 groupWords :: Map.Map String (Map.Map String Float) -> [String] -> [Set.Set String]
-groupWords mp xs = foldl (updateGroups mp) initialSet [1..100]
+groupWords mp xs = foldl (updateGroups mp) initialSet [1..5]
   where singletonSet = [Set.fromList xs]
         initialSet = divideSet singletonSet mp
 
